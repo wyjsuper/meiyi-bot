@@ -420,7 +420,7 @@
             font-size: 20px;
             color: var(--primary-color);
             transition: var(--transition);
-            z-index: 1000;
+            z-index: 9999;
         }
 
         .config-btn:hover {
@@ -487,7 +487,7 @@
             right: 20px;
             display: flex;
             gap: 10px;
-            z-index: 1000;
+            z-index: 9999;
         }
 
         .action-buttons .btn {
@@ -495,11 +495,26 @@
             padding: 10px 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .action-buttons .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons {
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .action-buttons .btn {
+                font-size: 0.9rem;
+                padding: 8px 16px;
+            }
         }
 
         .alert {
@@ -572,8 +587,8 @@
         <span>检测中...</span>
     </div>
 
-    <!-- 配置按钮 -->
-    <div class="config-btn" id="configBtn" onclick="toggleConfigPanel()">
+    <!-- 配置按钮（已隐藏） -->
+    <div class="config-btn" id="configBtn" onclick="toggleConfigPanel()" style="display: none;">
         <i class="fas fa-cog"></i>
     </div>
 
@@ -699,8 +714,8 @@
         </div>
     </div>
 
-    <!-- 操作按钮 -->
-    <div class="action-buttons">
+    <!-- 操作按钮（已隐藏） -->
+    <div class="action-buttons" style="display: none;">
         <button class="btn btn-secondary" id="configToggle" onclick="toggleConfigPanel()">
             <i class="fas fa-cog me-2"></i>配置
         </button>
