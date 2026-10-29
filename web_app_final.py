@@ -12,6 +12,7 @@ from typing import List, Dict, Any
 from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = 'meiyi_admin_secret_key_2026'  # 会话密钥
 
 # 配置参数
 MAX_ANSWERS = 2
@@ -21,8 +22,8 @@ SIMILARITY_THRESHOLD = 0.4
 qa_pairs = []
 initialized = False
 
-# 全局变量
-app = Flask(__name__)
+# 管理员配置
+ADMIN_PASSWORD = 'welcome888'
 
 class SearchEngine:
     """搜索引擎"""
@@ -147,6 +148,61 @@ def load_knowledge_base():
         qa_pairs = search_engine.parse_qa_pairs()
         initialized = True
         print(f"知识库加载成功，共 {len(qa_pairs)} 个问答对")
+
+# 管理员路由
+@app.route('/admin')
+def admin():
+    """管理员登录页面"""
+    if 'admin_logged_in' not in session:
+        return render_template('admin_login.html')
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/login', methods=['POST'])
+def admin_login():
+    """管理员登录验证"""
+    password = request.form.get('password', '')
+    if password == ADMIN_PASSWORD:
+        session['admin_logged_in'] = True
+        return redirect(url_for('admin_dashboard'))
+    return render_template('admin_login.html', error='密码错误')
+
+@app.route('/admin/logout')
+def admin_logout():
+    """管理员登出"""
+    session.pop('admin_logged_in', None)
+    return redirect(url_for('admin'))
+
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    """管理员面板"""
+    if 'admin_logged_in' not in session:
+        return redirect(url_for('admin'))
+
+    # 加载知识库信息
+    load_knowledge_base()
+
+    return render_template('admin_dashboard.html',
+                         qa_pairs_count=len(qa_pairs),
+                         max_answers=MAX_ANSWERS,
+                         similarity_threshold=SIMILARITY_THRESHOLD)
+
+@app.route('/admin/config', methods=['POST'])
+def admin_config():
+    """更新配置"""
+    if 'admin_logged_in' not in session:
+        return jsonify({'error': '未授权'}), 403
+
+    try:
+        data = request.json
+        if 'maxAnswers' in data:
+            global MAX_ANSWERS
+            MAX_ANSWERS = int(data['maxAnswers'])
+        if 'similarityThreshold' in data:
+            global SIMILARITY_THRESHOLD
+            SIMILARITY_THRESHOLD = float(data['similarityThreshold'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 # API路由
 @app.route('/')
