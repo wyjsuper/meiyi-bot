@@ -428,6 +428,34 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
 
+        .admin-entry {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .admin-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
         .config-panel, .upload-panel {
             position: fixed;
             top: 50%;
@@ -545,8 +573,16 @@
     </div>
 
     <!-- 配置按钮 -->
-    <div class="config-btn" id="configBtn">
+    <div class="config-btn" id="configBtn" onclick="toggleConfigPanel()">
         <i class="fas fa-cog"></i>
+    </div>
+
+    <!-- 管理员入口 -->
+    <div class="admin-entry">
+        <a href="/admin" class="admin-btn">
+            <i class="fas fa-user-shield"></i>
+            <span>管理员</span>
+        </a>
     </div>
 
     <!-- 主容器 -->
@@ -578,6 +614,17 @@
                         <br>• 报销流程是什么？
                         <br>• 如何登录系统？
                         <br><br>
+
+                        <div style="background: #e7f3ff; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                            <i class="fas fa-info-circle me-2" style="color: #0066cc;"></i>
+                            <strong>提示：</strong>
+                            点击右上角的
+                            <i class="fas fa-cog" style="color: #667eea;"></i> 图标可以快速配置系统参数
+                            • 点击右上角的
+                            <i class="fas fa-user-shield" style="color: #667eea;"></i>
+                            <strong>管理员</strong> 按钮可以进入管理界面
+                        </div>
+
                         <div class="quick-questions">
                             <button class="quick-question" onclick="askQuestion('为什么重置密码的邮件一直收不到?')">为什么重置密码的邮件一直收不到?</button>
                             <button class="quick-question" onclick="askQuestion('报销流程是什么?')">报销流程是什么?</button>
@@ -886,7 +933,7 @@
             config.similarityThreshold = parseInt(document.getElementById('similarityThreshold').value) / 100;
 
             try {
-                const response = await fetch('/api/config', {
+                const response = await fetch('/admin/config', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(config)
