@@ -21,6 +21,9 @@ SIMILARITY_THRESHOLD = 0.4
 qa_pairs = []
 initialized = False
 
+# 全局变量
+app = Flask(__name__)
+
 class SearchEngine:
     """搜索引擎"""
 
