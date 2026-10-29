@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试页面</title>
+</head>
+<body>
+    <h1>测试配置按钮是否隐藏</h1>
+    <p>如果看到配置和知识库按钮，说明有缓存问题</p>
+
+    <!-- 这里应该没有按钮 -->
+    <div style="position: fixed; bottom: 20px; right: 20px;">
+        <button style="display: none; margin: 5px;">配置</button>
+        <button style="display: none; margin: 5px;">知识库</button>
+    </div>
+
+    <p>刷新页面查看变化</p>
+    <button onclick="location.reload()">刷新页面</button>
+</body>
+</html>

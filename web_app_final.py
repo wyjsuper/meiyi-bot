@@ -210,6 +210,16 @@ def index():
     """主页"""
     return render_template('index_final.html')
 
+@app.route('/debug')
+def debug():
+    """调试页面"""
+    return render_template('debug.html')
+
+@app.route('/test-hidden')
+def test_hidden():
+    """测试按钮隐藏状态"""
+    return render_template('test_hidden_buttons.html')
+
 @app.route('/api/ask', methods=['POST'])
 def ask():
     """问答API"""

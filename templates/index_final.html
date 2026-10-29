@@ -509,6 +509,10 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
 
+        .hidden {
+            display: none !important;
+        }
+
         @media (max-width: 768px) {
             .action-buttons {
                 bottom: 10px;
@@ -719,7 +723,7 @@
     </div>
 
     <!-- 操作按钮（已隐藏） -->
-    <div class="action-buttons" style="display: none;">
+    <div class="action-buttons hidden">
         <button class="btn btn-secondary" id="configToggle" onclick="toggleConfigPanel()">
             <i class="fas fa-cog me-2"></i>配置
         </button>

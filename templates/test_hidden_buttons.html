@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试按钮隐藏状态</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .hidden-test {
+            display: none !important;
+        }
+        #actualButtons {
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>美易在线答疑 - 按钮隐藏测试</h1>
+
+    <div class="test-section">
+        <h2>1. 检查CSS样式</h2>
+        <p>检查 .action-buttons 是否设置了 display: none</p>
+        <div id="cssCheck"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. 检查实际DOM元素</h2>
+        <p>查看页面中是否存在操作按钮：</p>
+        <div id="actualButtons"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 测试结果</h2>
+        <div id="testResult">正在测试...</div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行测试
+        window.addEventListener('load', function() {
+            // 1. 检查CSS样式
+            const styleSheets = document.styleSheets;
+            let hasDisplayNone = false;
+
+            for (let i = 0; i < styleSheets.length; i++) {
+                try {
+                    const rules = styleSheets[i].cssRules || styleSheets[i].rules;
+                    for (let j = 0; j < rules.length; j++) {
+                        const rule = rules[j];
+                        if (rule.selectorText && rule.selectorText.includes('.action-buttons')) {
+                            console.log('找到.action-buttons规则:', rule.cssText);
+                            if (rule.style && rule.style.display === 'none') {
+                                hasDisplayNone = true;
+                                break;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log('无法访问样式表:', e);
+                }
+            }
+
+            document.getElementById('cssCheck').innerHTML =
+                hasDisplayNone ?
+                '<span style="color: green;">✅ CSS中设置了 display: none</span>' :
+                '<span style="color: red;">❌ CSS中未找到 display: none</span>';
+
+            // 2. 检查DOM中是否有按钮
+            const actionButtons = document.querySelector('.action-buttons');
+            let buttonContent = '';
+
+            if (actionButtons) {
+                buttonContent = '找到.action-buttons元素<br>';
+                const buttons = actionButtons.querySelectorAll('button');
+                buttons.forEach((btn, index) => {
+                    buttonContent += `按钮 ${index + 1}: ${btn.textContent.trim()} (display: ${btn.style.display})<br>`;
+                });
+            } else {
+                buttonContent = '未找到.action-buttons元素';
+            }
+
+            document.getElementById('actualButtons').innerHTML = buttonContent;
+
+            // 3. 显示最终结果
+            const finalResult = hasDisplayNone && (!actionButtons || actionButtons.style.display === 'none');
+            document.getElementById('testResult').innerHTML =
+                finalResult ?
+                '<span style="color: green; font-size: 18px;">✅ 测试通过：按钮已正确隐藏</span>' :
+                '<span style="color: red; font-size: 18px;">❌ 测试失败：按钮未正确隐藏</span>';
+        });
+    </script>
+</body>
+</html>
