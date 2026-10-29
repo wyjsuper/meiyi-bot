@@ -338,19 +338,15 @@
         }
 
         .status-badge {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
+            padding: 8px 16px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            font-size: 14px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 13px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
-            gap: 8px;
-            z-index: 1000;
+            gap: 6px;
         }
 
         .status-badge.online {
@@ -566,10 +562,8 @@
             }
 
             .status-badge {
-                top: 10px;
-                right: 10px;
+                padding: 6px 12px;
                 font-size: 12px;
-                padding: 8px 16px;
             }
 
             .config-btn {
@@ -589,10 +583,21 @@
     </style>
 </head>
 <body>
-    <!-- 状态指示器 -->
-    <div class="status-badge offline" id="statusBadge">
-        <span class="status-dot"></span>
-        <span>检测中...</span>
+    <!-- 顶部状态栏 -->
+    <div class="status-bar">
+        <!-- 状态指示器 -->
+        <div class="status-badge offline" id="statusBadge">
+            <span class="status-dot"></span>
+            <span>检测中...</span>
+        </div>
+
+        <!-- 管理员入口 -->
+        <div class="admin-entry">
+            <a href="/admin" class="admin-btn">
+                <i class="fas fa-user-shield"></i>
+                <span>管理员</span>
+            </a>
+        </div>
     </div>
 
     <!-- 配置按钮（已隐藏） -->
@@ -600,14 +605,7 @@
         <i class="fas fa-cog"></i>
     </div>
 
-    <!-- 管理员入口 -->
-    <div class="admin-entry">
-        <a href="/admin" class="admin-btn">
-            <i class="fas fa-user-shield"></i>
-            <span>管理员</span>
-        </a>
-    </div>
-
+    
     <!-- 主容器 -->
     <div class="chat-container">
         <!-- 头部 -->
