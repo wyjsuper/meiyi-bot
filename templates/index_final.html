@@ -824,6 +824,9 @@
         </div>
         <div class="popup-question" id="unansweredQuestion"></div>
         <div class="popup-actions">
+            <button class="popup-btn" onclick="submitToBackend()">
+                <i class="fas fa-paper-plane"></i> 提交给管理员
+            </button>
             <button class="popup-btn" onclick="contactSupport()">
                 <i class="fas fa-headset"></i> 联系客服
             </button>
@@ -1066,10 +1069,32 @@
             popup.classList.remove('show');
         }
 
+        // 提交未解答问题到后台
+        function submitToBackend() {
+            const question = document.getElementById('unansweredQuestion').textContent;
+
+            fetch('/api/unanswered', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: question })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('问题已提交给管理员，管理员会在后台查看并回答。');
+                    hideUnansweredPopup();
+                } else {
+                    alert('提交失败：' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('提交失败：' + error.message);
+            });
+        }
+
         // 联系客服
         function contactSupport() {
-            const message = `您好，我想咨询一个问题：${document.getElementById('unansweredQuestion').text}\n\n请通过公司内部通讯系统联系IT支持团队。`;
-            // 这里可以添加实际的客服联系方式
+            const message = `您好，我想咨询一个问题：${document.getElementById('unansweredQuestion').textContent}\n\n请通过公司内部通讯系统联系IT支持团队。`;
             alert(message);
             hideUnansweredPopup();
         }

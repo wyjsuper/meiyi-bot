@@ -25,6 +25,36 @@ initialized = False
 # 管理员配置
 ADMIN_PASSWORD = 'welcome888'
 
+# 未解答问题队列
+unanswered_questions = []
+
+# 初始化一些测试数据（可选）
+def init_unanswered_questions():
+    global unanswered_questions
+    if not unanswered_questions:
+        # 可以在这里添加一些测试问题
+        pass
+
+# 调用初始化
+init_unanswered_questions()
+
+# 添加一些测试数据（仅用于演示）
+if len(unanswered_questions) == 0:
+    unanswered_questions.extend([
+        {
+            'id': 1,
+            'question': '如何申请差旅报销？',
+            'timestamp': '2026-10-30 10:30:00',
+            'status': 'pending'
+        },
+        {
+            'id': 2,
+            'question': '发票丢失了怎么办？',
+            'timestamp': '2026-10-30 11:15:00',
+            'status': 'pending'
+        }
+    ])
+
 class SearchEngine:
     """搜索引擎"""
 
@@ -181,10 +211,16 @@ def admin_dashboard():
     # 加载知识库信息
     load_knowledge_base()
 
+    # 获取未解答问题
+    unanswered_resp = get_unanswered_questions()
+    unanswered_data = unanswered_resp.get_json() if unanswered_resp else {'questions': [], 'total_count': 0}
+
     return render_template('admin_dashboard.html',
                          qa_pairs_count=len(qa_pairs),
                          max_answers=MAX_ANSWERS,
-                         similarity_threshold=SIMILARITY_THRESHOLD)
+                         similarity_threshold=SIMILARITY_THRESHOLD,
+                         unanswered_questions=unanswered_questions,  # 直接传递列表
+                         unanswered_count=len(unanswered_questions))  # 直接计算数量
 
 @app.route('/admin/config', methods=['POST'])
 def admin_config():
@@ -371,6 +407,113 @@ def upload_knowledge_base():
                 return jsonify({'error': f'解析失败: {str(e)}'}), 500
         else:
             return jsonify({'error': '只支持.docx文件'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/unanswered', methods=['POST'])
+def add_unanswered_question():
+    """添加未解答问题"""
+    try:
+        data = request.json
+        question = data.get('question', '').strip()
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        if not question:
+            return jsonify({'error': '问题不能为空'}), 400
+
+        # 添加到未解答队列
+        unanswered_question = {
+            'id': len(unanswered_questions) + 1,
+            'question': question,
+            'timestamp': timestamp,
+            'status': 'pending'  # pending, answered, resolved
+        }
+        unanswered_questions.append(unanswered_question)
+
+        print(f"新未解答问题: {question} (ID: {unanswered_question['id']})")
+
+        return jsonify({
+            'success': True,
+            'message': '问题已提交',
+            'question_id': unanswered_question['id']
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/unanswered', methods=['GET'])
+def get_unanswered_questions():
+    """获取未解答问题列表"""
+    try:
+        # 过滤出待处理的问题
+        pending_questions = [q for q in unanswered_questions if q['status'] == 'pending']
+
+        return jsonify({
+            'success': True,
+            'questions': pending_questions,
+            'total_count': len(pending_questions)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/unanswered/<int:question_id>/answer', methods=['POST'])
+def answer_unanswered_question(question_id):
+    """回答未解答问题"""
+    try:
+        if 'admin_logged_in' not in session:
+            return jsonify({'error': '未授权'}), 403
+
+        data = request.json
+        answer = data.get('answer', '').strip()
+
+        if not answer:
+            return jsonify({'error': '答案不能为空'}), 400
+
+        # 查找并更新问题
+        for question in unanswered_questions:
+            if question['id'] == question_id:
+                question['answer'] = answer
+                question['status'] = 'answered'
+                question['answered_by'] = 'admin'
+                question['answered_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                # 添加到知识库
+                qa = {
+                    'id': len(qa_pairs) + 1,
+                    'question': question['question'],
+                    'answer': answer,
+                    'index': len(qa_pairs) + 1
+                }
+                qa_pairs.append(qa)
+
+                print(f"已回答问题: {question['question']} -> {answer}")
+
+                return jsonify({
+                    'success': True,
+                    'message': '答案已添加'
+                })
+
+        return jsonify({'error': '问题未找到'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/unanswered/<int:question_id>/resolve', methods=['POST'])
+def resolve_unanswered_question(question_id):
+    """标记未解答问题为已解决"""
+    try:
+        if 'admin_logged_in' not in session:
+            return jsonify({'error': '未授权'}), 403
+
+        for question in unanswered_questions:
+            if question['id'] == question_id:
+                question['status'] = 'resolved'
+                question['resolved_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                return jsonify({
+                    'success': True,
+                    'message': '问题已标记为已解决'
+                })
+
+        return jsonify({'error': '问题未找到'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
