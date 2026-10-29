@@ -505,6 +505,76 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
 
+        /* 未解答问题漂浮模块 */
+        .unanswered-popup {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(238, 90, 36, 0.3);
+            max-width: 300px;
+            transform: translateY(150%);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 9998;
+            cursor: pointer;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateY(150%);
+            }
+            50% {
+                transform: translateY(-10px) translateY(150%);
+            }
+        }
+
+        .unanswered-popup.show {
+            transform: translateY(0);
+        }
+
+        .unanswered-popup .popup-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .unanswered-popup .popup-icon {
+            font-size: 20px;
+        }
+
+        .unanswered-popup .popup-question {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .unanswered-popup .popup-actions {
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+        }
+
+        .unanswered-popup .popup-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .unanswered-popup .popup-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
         .hidden {
             display: none !important;
         }
@@ -578,6 +648,22 @@
             .action-buttons .btn {
                 font-size: 0.9rem;
                 padding: 8px 16px;
+            }
+
+            .unanswered-popup {
+                bottom: 80px;
+                right: 10px;
+                max-width: 250px;
+                padding: 12px 15px;
+            }
+
+            .unanswered-popup .popup-question {
+                font-size: 12px;
+            }
+
+            .unanswered-popup .popup-btn {
+                font-size: 11px;
+                padding: 4px 8px;
             }
         }
     </style>
@@ -730,11 +816,29 @@
         </button>
     </div>
 
+    <!-- 未解答问题漂浮模块 -->
+    <div class="unanswered-popup" id="unansweredPopup">
+        <div class="popup-header">
+            <i class="fas fa-question-circle popup-icon"></i>
+            <span>待解决问题</span>
+        </div>
+        <div class="popup-question" id="unansweredQuestion"></div>
+        <div class="popup-actions">
+            <button class="popup-btn" onclick="contactSupport()">
+                <i class="fas fa-headset"></i> 联系客服
+            </button>
+            <button class="popup-btn" onclick="dismissPopup()">
+                <i class="fas fa-times"></i> 忽略
+            </button>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // 全局变量
         let isTyping = false;
         let config = { maxAnswers: 2, similarityThreshold: 0.4 };
+        let hasAnswers = false; // 标记是否已找到答案
         console.log('美易在线答疑 v2.1 - 按钮已隐藏');
 
         // 设置欢迎消息的时间
@@ -860,6 +964,11 @@
                 hideTyping();
 
                 if (data.success) {
+                    // 如果找到了答案，隐藏未解答弹窗
+                    if (hasAnswers && (data.high_similarity && data.high_similarity.length > 0 || data.low_similarity && data.low_similarity.length > 0)) {
+                        hideUnansweredPopup();
+                    }
+
                     const answersHtml = [];
 
                     if (data.high_similarity && data.high_similarity.length > 0) {
@@ -921,6 +1030,10 @@
                     }
                 } else {
                     addMessage(data.message, 'assistant');
+                    // 显示未解答问题弹窗
+                    if (!hasAnswers) {
+                        showUnansweredPopup(document.getElementById('userInput').value);
+                    }
                 }
             } catch (error) {
                 hideTyping();
@@ -935,6 +1048,35 @@
         function askQuestion(question) {
             document.getElementById('userInput').value = question;
             sendMessage();
+        }
+
+        // 显示未解答问题弹窗
+        function showUnansweredPopup(question) {
+            const popup = document.getElementById('unansweredPopup');
+            const questionDiv = document.getElementById('unansweredQuestion');
+
+            questionDiv.textContent = question;
+            popup.classList.add('show');
+            hasAnswers = false;
+        }
+
+        // 隐藏未解答问题弹窗
+        function hideUnansweredPopup() {
+            const popup = document.getElementById('unansweredPopup');
+            popup.classList.remove('show');
+        }
+
+        // 联系客服
+        function contactSupport() {
+            const message = `您好，我想咨询一个问题：${document.getElementById('unansweredQuestion').text}\n\n请通过公司内部通讯系统联系IT支持团队。`;
+            // 这里可以添加实际的客服联系方式
+            alert(message);
+            hideUnansweredPopup();
+        }
+
+        // 忽略问题
+        function dismissPopup() {
+            hideUnansweredPopup();
         }
 
         // 切换配置面板
